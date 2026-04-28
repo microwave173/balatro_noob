@@ -1,0 +1,97 @@
+﻿{
+  "phase": "PLAY",
+  "plan": {
+    "run": "Early run with no Jokers. Use discards to build one strong scoring hand instead of spending all hands on weak pairs.",
+    "phase": "Small Blind needs 300 chips. Current pair is playable but too weak to clear quickly. Prefer discard if it improves toward Flush, Straight, Two Pair, or Three of a Kind."
+  },
+  "run": {
+    "ante": 1,
+    "round": 1,
+    "money": 4,
+    "stake": "WHITE",
+    "deck": "RED",
+    "won": false
+  },
+  "blind": {
+    "current": "Small Blind",
+    "type": "SMALL",
+    "required": 300,
+    "effect": "none",
+    "next_boss": "The Pillar",
+    "next_boss_effect": "Cards played previously this Ante are debuffed"
+  },
+  "round": {
+    "chips": 0,
+    "hands_left": 4,
+    "discards_left": 4,
+    "hands_played": 0,
+    "discards_used": 0,
+    "reroll_cost": 5,
+    "select_limit": 5
+  },
+  "jokers": [],
+  "cons": [],
+  "hand": [
+    "0,Ace,Clubs,base,+11 Chips",
+    "1,King,Clubs,base,+10 Chips",
+    "2,9,Diamonds,base,+9 Chips",
+    "3,7,Spades,base,+7 Chips",
+    "4,7,Hearts,base,+7 Chips",
+    "5,6,Clubs,base,+6 Chips",
+    "6,5,Diamonds,base,+5 Chips",
+    "7,3,Spades,base,+3 Chips"
+  ],
+  "deck_left": {
+    "total": 44,
+    "suits": {
+      "Clubs": 10,
+      "Diamonds": 11,
+      "Hearts": 12,
+      "Spades": 11
+    },
+    "ranks": {
+      "Ace": 3,
+      "King": 3,
+      "Queen": 4,
+      "Jack": 4,
+      "10": 4,
+      "9": 3,
+      "8": 4,
+      "7": 2,
+      "6": 3,
+      "5": 3,
+      "4": 4,
+      "3": 3,
+      "2": 4
+    },
+    "note": "Counts only; not draw order."
+  },
+  "poker": [
+    "Pair,L1,chips10,mult2,played0,round0",
+    "Two Pair,L1,chips20,mult2,played0,round0",
+    "Three of a Kind,L1,chips30,mult3,played0,round0",
+    "Straight,L1,chips30,mult4,played0,round0",
+    "Flush,L1,chips35,mult4,played0,round0",
+    "Full House,L1,chips40,mult4,played0,round0",
+    "Four of a Kind,L1,chips60,mult7,played0,round0",
+    "Straight Flush,L1,chips100,mult8,played0,round0"
+  ],
+  "skills": [],
+  "legal": {
+    "play": "Choose 1-5 hand indexes from hand.",
+    "discard": "Choose 1-5 hand indexes from hand if can_discard is true.",
+    "can_discard": true,
+    "inspect_deck": "Optional one-time action to request deck_detail before final play/discard.",
+    "indexing": "Use zero-based indexes shown at the start of each hand item."
+  },
+  "expected_output_shape": {
+    "used_skills": [],
+    "ignored_skills": [],
+    "action": "play|discard|inspect_deck",
+    "cards": [0, 1],
+    "phase_plan": "short optional plan update",
+    "reason": "<=18 words"
+  },
+  "human_hint_not_for_model_later": "A reasonable decision may discard low off-plan cards, e.g. [6,7] or [2,6,7], while keeping 7 pair and club/straight potential; exact answer is debatable."
+}
+

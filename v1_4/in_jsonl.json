@@ -1,0 +1,1346 @@
+{
+    "kind": "play",
+    "created_at": "2026-04-28T17:12:02",
+    "joker_signature": [
+        "Swashbuckler",
+        "Banner",
+        "Supernova",
+        "Pareidolia",
+        "Scary Face"
+    ],
+    "observation": {
+        "phase": "PLAY",
+        "compact": "Current stage: PLAY\n\nYou can see this game state:\n- Run: ante 6, round 18, money $0, stake WHITE, deck RED, won=False.\n- Current blind: The Psychic (BOSS), needs 40000 chips, effect: 必须出 5 张牌.\n- Upcoming boss: The Psychic, effect: 必须出 5 张牌.\n- Round resources: current chips 29208, hands left 1, discards left 4, hands played 3, discards used 0, selection limit 5.\n- Jokers: 0,Swashbuckler,j_swashbuckler,Adds sell value of all other Jokers to Mult,sell=3,enhancement=SET MULT|edition=HOLO; 1,Banner,j_banner,+30 Chips for each remaining discard,sell=2,enhancement=DISCARD CHIPS; 2,Supernova,j_supernova,Adds times poker hand played this run to Mult,sell=2,enhancement=HAND PLAYED MULT; 3,Pareidolia,j_pareidolia,All cards are considered face cards,sell=2,enhancement=ALL FACE CARDS; 4,Scary Face,j_scary_face,Played face cards give +30 Chips when scored,sell=2,enhancement=SCARY FACES.\n- Consumables: 0,The Hermit,c_hermit,The Hermit: Doubles money (Max of $20),sell=1,enhancement=DOLLAR DOUBLER.\n- Hand cards:\n  - 0,Queen,Spades,base,+10 Chips\n  - 1,Jack,Clubs,base,+10 Chips\n  - 2,10,Diamonds,base,+10 Chips\n  - 3,6,Clubs,base,+6 Chips\n  - 4,3,Hearts,base,+3 Chips\n  - 5,3,Clubs,base,+3 Chips\n  - 6,2,Spades,base,+2 Chips\n  - 7,2,Diamonds,base,+2 Chips\n- Remaining deck counts, not draw order: total 30, suits {'Clubs': 6, 'Diamonds': 8, 'Hearts': 9, 'Spades': 7}, ranks {'Ace': 3, 'King': 3, 'Queen': 2, 'Jack': 2, '10': 3, '9': 3, '8': 3, '7': 2, '6': 2, '5': 4, '4': 2, '3': 1}.\n- Poker hand levels:\n  - Pair,L1,chips10,mult2,played30,round3\n  - Two Pair,L1,chips20,mult2,played4,round0\n  - Three of a Kind,L1,chips30,mult3,played1,round0\n  - High Card,L1,chips5,mult1,played1,round0\n  - Flush Five,L1,chips160,mult16,played0,round0\n  - Flush House,L1,chips140,mult14,played0,round0\n  - Five of a Kind,L1,chips120,mult12,played0,round0\n  - Straight Flush,L1,chips100,mult8,played0,round0\n- BalatroBot poker hand score table for this run:\n  - These are BalatroBot API hand-level values only; include selected card chips, Jokers, xMult, enhancements, retriggers, and boss effects separately when estimating final score.\n  - Flush Five: level=1, chips=160, mult=16, played=0, played_this_round=0\n  - Flush House: level=1, chips=140, mult=14, played=0, played_this_round=0\n  - Five of a Kind: level=1, chips=120, mult=12, played=0, played_this_round=0\n  - Straight Flush: level=1, chips=100, mult=8, played=0, played_this_round=0\n  - Four of a Kind: level=1, chips=60, mult=7, played=0, played_this_round=0\n  - Full House: level=1, chips=40, mult=4, played=0, played_this_round=0\n  - Flush: level=1, chips=35, mult=4, played=0, played_this_round=0\n  - Straight: level=1, chips=30, mult=4, played=0, played_this_round=0\n  - Three of a Kind: level=1, chips=30, mult=3, played=1, played_this_round=0\n  - Two Pair: level=1, chips=20, mult=2, played=4, played_this_round=0\n  - Pair: level=1, chips=10, mult=2, played=30, played_this_round=3\n  - High Card: level=1, chips=5, mult=1, played=1, played_this_round=0\n- Current playable made hands from non-debuffed hand cards:\n  - Two Pair: cards=[4, 5, 6, 7], note=3/2\n  - Pair: cards=[4, 5], note=3\n  - Pair: cards=[6, 7], note=2\n  - High Card: cards=[0], note=Queen\n- Current-run compressed operation history: Ante 6 R17 SHOP after Big Blind cleared (35k, final Pair 9306). Psychic boss (40k) requires 5 cards/hand. Jokers: Pareidolia, Scary Face, Swashbuckler, Supernova, Banner. Avg hand ~9k, need ~10k/hand. Rerolled shop ($5 spent, now $11) seeking Jupiter or XMult. Continue to aim for 5-card hands with discards. Economy 11.\n- Recent operations in this run:\n  - step120; SMODS_BOOSTER_OPENED; error; state 6/17 chips=0 money=3 -> chips=None money=None state=None; error=NOT_ALLOWED: Cannot select joker, joker slots are full. Current: 5, Limit: 5\n  - step121; PACK; pack; target=skip; state 6/17 chips=0 money=3 -> chips=0 money=3 state=SHOP; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=Joker slots are full; current lineup is functional but borderline against The Psychic. Selling a Joker to fit Abstract Joker might improve score slightly but is risky and unpredictable. Skipping preserves money and allows potential shop ...\n  - step122; SHOP; buy; target=card0; state 6/17 chips=0 money=3 -> chips=0 money=0 state=SHOP; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=Current build averages ~9.3k per Pair, need 10k for 40k boss. Buying Hermit doubles money from $3 to $6, enabling purchase of Arcana Pack for a Tarot card like Justice to create Glass Card, boosting one hand to potentially clear. This is...\n  - step123; SHOP; next_round; state 6/17 chips=0 money=0 -> chips=0 money=0 state=BLIND_SELECT; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=With $0 and no affordable upgrades, selling a Joker would weaken the line-up without enabling a purchase. Recent scores average ~9300 per hand, and with 4 hands and 4 discards, the 40k target is achievable if discards are managed to keep...\n  - step124; BLIND_SELECT; select; state 6/17 chips=0 money=0 -> chips=0 money=0 state=SELECTING_HAND; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=The current build can likely clear The Psychic's 40k target with 4 hands, as each Pair with face cards can score ~11k, totaling ~44k. Skipping would forgo the blind reward and money, leaving us with $0 and no upgrades for Ante 7, which i...\n  - step125; PLAY; play; cards=[0, 1, 2, 6, 7]; scored=9312; state 6/18 chips=0 money=0 -> chips=9312 money=0 state=SELECTING_HAND; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=The current Pair hand (Ace, King, Queen, 2, 2) with Jokers yields ~11.6k score, which is sufficient to clear the 40k boss over 4 hands. Discarding would reduce Banner chips, and using Hermit is useless since we have $0.\n  - step126; PLAY; play; cards=[0, 1, 2, 3, 4]; scored=9996; state 6/18 chips=9312 money=0 -> chips=19308 money=0 state=SELECTING_HAND; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=Current best hand is a Pair of 7s with high cards; estimated score ~12000 chips, above the ~10229 average needed per remaining hand. Playing now preserves discards for future hands.\n  - step127; PLAY; play; cards=[0, 1, 2, 3, 4]; scored=9900; state 6/18 chips=19308 money=0 -> chips=29208 money=0 state=SELECTING_HAND; jokers=['Swashbuckler', 'Banner', 'Supernova', 'Pareidolia', 'Scary Face']; reason=Best hand is Pair of 4s with Ace and Jack as kickers. Estimated score ~10920, leaving ~9772 needed. Playing now preserves 4 discards to improve the final hand.\n- Rulebook guidance from reflection: 1. Before each blind, estimate your best realistic hand score using actual Joker effects, hand levels, and available draws. If that score is under 50% of the target for the specific boss (including its effect), you are at risk and must upgrade immediately.; 2. In Ante 1-3, prioritize buying Jokers that give unconditional +Mult or +Chips. Avoid conditional Jokers unless you have tools to meet their conditions consistently.; 3. By Ante 4, ensure you have at least one scaling Mult or XMult Joker. Flat +Chips and +Mult alone will not clear 10k+ targets.; 4. When you have multiple hands remaining and a strong play scores at least 40-50% of the boss target, play it immediately rather than discarding. Preserve discards for subsequent hands.; 5. Do not waste rerolls early. Only reroll if you have at least $5 and the shop items are all useless for your build. Otherwise, save money for interest and future shops.; 6. Against bosses that discard your hand after each play (e.g., The Hook), consider playing a weak hand first to cycle cards, but only if you have enough hands left. Ensure your final hand is strong enough to finish the blind.; 7. If a Joker's condition is hard to meet consistently in a round, plan your play order to maximize its contribution. Sacrifice a weak hand to set up the condition if needed.; 8. Sell degrading or situational Jokers before they become dead weight. Replace them with permanent upgrades.; 9. Do not rely on a single strategy that requires a specific draw unless you have enough consistency. Overusing discards to chase one hand type can deplete resources and leave you with weak plays.; 10. When you have only 1 hand left and discards remain, discarding to improve the hand is better than playing a doomed weak hand, provided you have a reasonable chance of drawing a stronger hand that can push you over the target.; 11. Against one-hand bosses (The Needle), use all discards before entering the boss round to set up a strong opening hand. Do not discard during the boss round except to improve the hand.; 12. Against bosses with 0 discards (The Water), commit all discards before entering the blind. Your opening hand must be strong enough to win in one play.; 13. When facing a boss that reduces hand size (The Manacle), your draw consistency drops. Prioritize Jokers that trigger reliably with smaller hands, or use Tarot cards to enhance the deck before entering.; 14. If your Joker lineup barely cleared the previous blind (within 10-15% of target), the next shop must add scaling or XMult. Barely surviving means the build will fail against harder bosses without improvement.; 15. Economy management: Save money for interest and key purchases. Do not spend below $4 unless you have an immediate scoring upgrade. In critical positions, be willing to spend all money on direct power, even if it means going broke.; 16. Do not buy economy items (e.g., Clearance Sale) when facing a boss blind that requires immediate scoring.; 17. Prioritize buying Planet cards that directly strengthen your main scoring hand, especially if the upcoming boss threatens that hand's consistency.; 18. Tarot cards like Justice can create Glass Cards for X2 mult. Use them on high-value cards you will play and that align with your Joker strategy. Do not let consumables clog your slots unused.; 19. When buying from packs early game, prefer direct Joker purchases from the shop unless the pack offers clearly superior choices. Selling a Joker to buy a pack is rarely worthwhile unless you are desperate and the pack has high odds of a game-changer.; 20. Conditional XMult Jokers like Mystic Summit are unreliable if you need to discard to improve your hand. Only rely on them if you plan to stop discarding early.; 21. Retrigger Jokers multiply the contribution of the retriggered card. Position them to maximize value, e.g., Photograph after Hanging Chad to trigger X2 multiple times.; 22. Ensure all Jokers in your lineup can trigger on the same hand type. Conflicting conditions will underperform.; 23. Do not overestimate the power of a single XMult Joker without a reliable base of chips and mult.; 24. Against bosses that debuff played cards, avoid replaying the same cards. Use discards to cycle your hand each turn.; 25. Against bosses that debuff a suit, use Tarot cards to convert debuffed cards to usable suits, or rely on hand types that avoid the debuffed suit.; 26. With Photograph and Card Sharp together: play a sacrificial hand with no face cards first, then play a strong hand with a face card second. Remember that Photograph only works once per round.; 27. Do not spend all discards chasing a specific hand type. If after 3 discards you haven't found your target, play the strongest available hand. In early rounds with tight margins, sometimes playing a consistent medium hand is better than exhausting discards for a slim chance.; 28. Selling Jokers should only be done to free a slot for a clear upgrade, not to generate money for speculative rerolls.; 29. In the shop, if current build is far behind the next boss target, buy guaranteed scoring items (Ramen, Photograph, etc.) instead of gambling on packs. If critically weak, buy any immediate scoring Joker or Planet that directly increases power.; 30. When facing a boss that prevents repeating hand types (e.g., The Eye), ensure your build can score with at least two different high-scoring hand types or have a single hand type strong enough to one-shot the blind.; 31. Account for all Joker conditions accurately. Include all active Jokers in your estimate.; 32. Avoid leaving a shop with only two weak Jokers when facing a boss requiring 22k+. Having no XMult or scaling Mult is a death sentence. Reroll aggressively or buy any upgrade.; 33. Do not skip blinds early to get tags if your build is already weak. Skipping deprives you of hands and money. Only skip if you have a solid power base and want a specific tag.; 34. When you have $0 and weak Jokers, selling a Joker for $4 to buy a pack is often a desperate gamble. Only do this if the pack can reasonably give you a game-changer.; 35. Supernova is only strong if you have played many copies of one hand. Pair it with a consistent hand type.; 36. Against The Water (0 discards), your opening hand must be strong enough to win in one play. If your average hand score is < 50% of boss target, you will almost certainly lose. Prepare by buying reliable scoring Jokers before the boss.; 37. In early blinds (Ante 1-2) with low targets, prioritize playing reliable hands (like Pair) rather than using all discards to chase higher-scoring hands. A consistent 200-300 per hand can win with 4 hands, while chasing may leave you short.; 38. When your Joker lineup is chip-heavy but mult-light, prioritize buying any Mult source even if it's low-level. For example, Banner + Photograph lacks mult scaling; buying a simple +Mult Joker can dramatically improve score.; 39. Against The Psychic (must play exactly 5 cards), ensure your hand selection is always 5 cards. Discard to find 5-card combos that maximize Joker triggers.; 40. Do not overcommit to a Joker that relies on a specific suit or rank unless you have conversion tools..\n- Legal actions: {'play': '1-5 hand indexes', 'discard': '1-5 if discards_left>0', 'can_discard': True, 'use': 'use(consumableN) or use(consumableN,cards=[hand indexes])', 'inspect_deck': 'ask once for deck_detail', 'indexing': 'zero-based hand indexes'}.\n\nPrevious run-level plan: ds to draw more Aces or high cards. Current plan: Play best Pair, then finish with second hand. Current plan: Continue Pair strategy; save discards for The Psychic. Current plan: reroll to seek Planet for Pair or direct scoring Joker Current plan: Buy Mega Buffoon Pack to try for a scoring Joker upgrade before The Psychic. Current plan: Increase money to afford a scoring upgrade Current plan: Proceed to the next blind with current Jokers; build is borderline but can likely clear The Psychic with careful play and discarding only when necessary to preserve Banner chips. Current plan: Continue playing Pair hands, using discards only if needed to maintain a Pair, but likely we can play the same type each time. Current plan: Continue playing Pair or better hands, using discards to maintain a Pair if needed. Current plan: Continue Pair strategy; use 4 discards to find high cards for next hand.",
+        "state": {
+            "seed": "EUSN4ML1",
+            "ante_num": 6,
+            "won": false,
+            "deck": "RED",
+            "shop": {
+                "count": 0,
+                "limit": 2,
+                "cards": [],
+                "highlighted_limit": 1
+            },
+            "round": {
+                "hands_left": 1,
+                "reroll_cost": 5,
+                "chips": 29208,
+                "discards_left": 4,
+                "hands_played": 3,
+                "discards_used": 0
+            },
+            "consumables": {
+                "count": 1,
+                "limit": 2,
+                "cards": [
+                    {
+                        "id": 3206,
+                        "state": [],
+                        "label": "The Hermit",
+                        "set": "TAROT",
+                        "modifier": {
+                            "enhancement": "DOLLAR DOUBLER"
+                        },
+                        "value": {
+                            "effect": "The Hermit: Doubles money (Max of $20)"
+                        },
+                        "key": "c_hermit",
+                        "cost": {
+                            "buy": 3,
+                            "sell": 1
+                        }
+                    }
+                ],
+                "highlighted_limit": 1
+            },
+            "vouchers": {
+                "count": 0,
+                "limit": 1,
+                "cards": [],
+                "highlighted_limit": 1
+            },
+            "stake": "WHITE",
+            "hand": {
+                "count": 8,
+                "limit": 8,
+                "cards": [
+                    {
+                        "id": 3088,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "Q",
+                            "effect": "+10 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_Q",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3047,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "J",
+                            "effect": "+10 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_J",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3063,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "T",
+                            "effect": "+10 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_T",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3042,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "6",
+                            "effect": "+6 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_6",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3065,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "3",
+                            "effect": "+3 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_3",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3039,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "3",
+                            "effect": "+3 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_3",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3077,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "2",
+                            "effect": "+2 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_2",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3051,
+                        "state": [],
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "2",
+                            "effect": "+2 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_2",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    }
+                ],
+                "highlighted_limit": 5
+            },
+            "packs": {
+                "count": 0,
+                "limit": 2,
+                "cards": [],
+                "highlighted_limit": 1
+            },
+            "jokers": {
+                "count": 5,
+                "limit": 5,
+                "cards": [
+                    {
+                        "id": 3090,
+                        "state": [],
+                        "label": "Swashbuckler",
+                        "set": "JOKER",
+                        "modifier": {
+                            "edition": "HOLO",
+                            "enhancement": "SET MULT"
+                        },
+                        "value": {
+                            "effect": "Adds sell value of all other Jokers to Mult"
+                        },
+                        "key": "j_swashbuckler",
+                        "cost": {
+                            "buy": 7,
+                            "sell": 3
+                        }
+                    },
+                    {
+                        "id": 3116,
+                        "state": [],
+                        "label": "Banner",
+                        "set": "JOKER",
+                        "modifier": {
+                            "enhancement": "DISCARD CHIPS"
+                        },
+                        "value": {
+                            "effect": "+30 Chips for each remaining discard"
+                        },
+                        "key": "j_banner",
+                        "cost": {
+                            "buy": 5,
+                            "sell": 2
+                        }
+                    },
+                    {
+                        "id": 3170,
+                        "state": [],
+                        "label": "Supernova",
+                        "set": "JOKER",
+                        "modifier": {
+                            "enhancement": "HAND PLAYED MULT"
+                        },
+                        "value": {
+                            "effect": "Adds times poker hand played this run to Mult"
+                        },
+                        "key": "j_supernova",
+                        "cost": {
+                            "buy": 5,
+                            "sell": 2
+                        }
+                    },
+                    {
+                        "id": 3195,
+                        "state": [],
+                        "label": "Pareidolia",
+                        "set": "JOKER",
+                        "modifier": {
+                            "enhancement": "ALL FACE CARDS"
+                        },
+                        "value": {
+                            "effect": "All cards are considered face cards"
+                        },
+                        "key": "j_pareidolia",
+                        "cost": {
+                            "buy": 5,
+                            "sell": 2
+                        }
+                    },
+                    {
+                        "id": 3194,
+                        "state": [],
+                        "label": "Scary Face",
+                        "set": "JOKER",
+                        "modifier": {
+                            "enhancement": "SCARY FACES"
+                        },
+                        "value": {
+                            "effect": "Played face cards give +30 Chips when scored"
+                        },
+                        "key": "j_scary_face",
+                        "cost": {
+                            "buy": 4,
+                            "sell": 2
+                        }
+                    }
+                ],
+                "highlighted_limit": 1
+            },
+            "used_vouchers": [],
+            "hands": {
+                "Flush House": {
+                    "order": 2,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "D_7",
+                            true
+                        ],
+                        [
+                            "D_7",
+                            true
+                        ],
+                        [
+                            "D_7",
+                            true
+                        ],
+                        [
+                            "D_4",
+                            true
+                        ],
+                        [
+                            "D_4",
+                            true
+                        ]
+                    ],
+                    "chips": 140,
+                    "level": 1,
+                    "mult": 14
+                },
+                "Full House": {
+                    "order": 6,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "H_K",
+                            true
+                        ],
+                        [
+                            "C_K",
+                            true
+                        ],
+                        [
+                            "D_K",
+                            true
+                        ],
+                        [
+                            "S_2",
+                            true
+                        ],
+                        [
+                            "D_2",
+                            true
+                        ]
+                    ],
+                    "chips": 40,
+                    "level": 1,
+                    "mult": 4
+                },
+                "Flush": {
+                    "order": 7,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "H_A",
+                            true
+                        ],
+                        [
+                            "H_K",
+                            true
+                        ],
+                        [
+                            "H_T",
+                            true
+                        ],
+                        [
+                            "H_5",
+                            true
+                        ],
+                        [
+                            "H_4",
+                            true
+                        ]
+                    ],
+                    "chips": 35,
+                    "level": 1,
+                    "mult": 4
+                },
+                "Pair": {
+                    "order": 11,
+                    "played": 30,
+                    "played_this_round": 3,
+                    "example": [
+                        [
+                            "S_K",
+                            false
+                        ],
+                        [
+                            "S_9",
+                            true
+                        ],
+                        [
+                            "D_9",
+                            true
+                        ],
+                        [
+                            "H_6",
+                            false
+                        ],
+                        [
+                            "D_3",
+                            false
+                        ]
+                    ],
+                    "chips": 10,
+                    "level": 1,
+                    "mult": 2
+                },
+                "Four of a Kind": {
+                    "order": 5,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_J",
+                            true
+                        ],
+                        [
+                            "H_J",
+                            true
+                        ],
+                        [
+                            "C_J",
+                            true
+                        ],
+                        [
+                            "D_J",
+                            true
+                        ],
+                        [
+                            "C_3",
+                            false
+                        ]
+                    ],
+                    "chips": 60,
+                    "level": 1,
+                    "mult": 7
+                },
+                "Straight Flush": {
+                    "order": 4,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_Q",
+                            true
+                        ],
+                        [
+                            "S_J",
+                            true
+                        ],
+                        [
+                            "S_T",
+                            true
+                        ],
+                        [
+                            "S_9",
+                            true
+                        ],
+                        [
+                            "S_8",
+                            true
+                        ]
+                    ],
+                    "chips": 100,
+                    "level": 1,
+                    "mult": 8
+                },
+                "Straight": {
+                    "order": 8,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "D_J",
+                            true
+                        ],
+                        [
+                            "C_T",
+                            true
+                        ],
+                        [
+                            "C_9",
+                            true
+                        ],
+                        [
+                            "S_8",
+                            true
+                        ],
+                        [
+                            "H_7",
+                            true
+                        ]
+                    ],
+                    "chips": 30,
+                    "level": 1,
+                    "mult": 4
+                },
+                "Three of a Kind": {
+                    "order": 9,
+                    "played": 1,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_T",
+                            true
+                        ],
+                        [
+                            "C_T",
+                            true
+                        ],
+                        [
+                            "D_T",
+                            true
+                        ],
+                        [
+                            "H_6",
+                            false
+                        ],
+                        [
+                            "D_5",
+                            false
+                        ]
+                    ],
+                    "chips": 30,
+                    "level": 1,
+                    "mult": 3
+                },
+                "Flush Five": {
+                    "order": 1,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "S_A",
+                            true
+                        ]
+                    ],
+                    "chips": 160,
+                    "level": 1,
+                    "mult": 16
+                },
+                "Two Pair": {
+                    "order": 10,
+                    "played": 4,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "H_A",
+                            true
+                        ],
+                        [
+                            "D_A",
+                            true
+                        ],
+                        [
+                            "C_Q",
+                            false
+                        ],
+                        [
+                            "H_4",
+                            true
+                        ],
+                        [
+                            "C_4",
+                            true
+                        ]
+                    ],
+                    "chips": 20,
+                    "level": 1,
+                    "mult": 2
+                },
+                "Five of a Kind": {
+                    "order": 3,
+                    "played": 0,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "H_A",
+                            true
+                        ],
+                        [
+                            "H_A",
+                            true
+                        ],
+                        [
+                            "C_A",
+                            true
+                        ],
+                        [
+                            "D_A",
+                            true
+                        ]
+                    ],
+                    "chips": 120,
+                    "level": 1,
+                    "mult": 12
+                },
+                "High Card": {
+                    "order": 12,
+                    "played": 1,
+                    "played_this_round": 0,
+                    "example": [
+                        [
+                            "S_A",
+                            true
+                        ],
+                        [
+                            "D_Q",
+                            false
+                        ],
+                        [
+                            "D_9",
+                            false
+                        ],
+                        [
+                            "C_4",
+                            false
+                        ],
+                        [
+                            "D_3",
+                            false
+                        ]
+                    ],
+                    "chips": 5,
+                    "level": 1,
+                    "mult": 1
+                }
+            },
+            "money": 0,
+            "state": "SELECTING_HAND",
+            "round_num": 18,
+            "cards": {
+                "count": 30,
+                "limit": 53,
+                "cards": [
+                    {
+                        "id": 3070,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "8",
+                            "effect": "+8 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_8",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3075,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "Q",
+                            "effect": "+10 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_Q",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3053,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "4",
+                            "effect": "+4 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_4",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3062,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "Q",
+                            "effect": "+10 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_Q",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3054,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "5",
+                            "effect": "+5 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_5",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3044,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "8",
+                            "effect": "+8 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_8",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3071,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "9",
+                            "effect": "+9 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_9",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3060,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "J",
+                            "effect": "+10 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_J",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3074,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "K",
+                            "effect": "+10 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_K",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3061,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "K",
+                            "effect": "+10 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_K",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3043,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "7",
+                            "effect": "+7 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_7",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3068,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "6",
+                            "effect": "+6 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_6",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3067,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "5",
+                            "effect": "+5 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_5",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3052,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "3",
+                            "effect": "+3 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_3",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3084,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "9",
+                            "effect": "+9 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_9",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3058,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "9",
+                            "effect": "+9 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_9",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3083,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "8",
+                            "effect": "+8 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_8",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3089,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "T",
+                            "effect": "+10 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_T",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3072,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "A",
+                            "effect": "+11 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_A",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3081,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "6",
+                            "effect": "+6 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_6",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3041,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "5",
+                            "effect": "+5 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_5",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3080,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "5",
+                            "effect": "+5 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_5",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3076,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "T",
+                            "effect": "+10 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_T",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3191,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "A",
+                            "effect": "+11 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_A",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3048,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "K",
+                            "effect": "+10 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_K",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3040,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "4",
+                            "effect": "+4 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_4",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3059,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "A",
+                            "effect": "+11 Chips",
+                            "suit": "D"
+                        },
+                        "key": "D_A",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3073,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "J",
+                            "effect": "+10 Chips",
+                            "suit": "H"
+                        },
+                        "key": "H_J",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3050,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "T",
+                            "effect": "+10 Chips",
+                            "suit": "C"
+                        },
+                        "key": "C_T",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    },
+                    {
+                        "id": 3082,
+                        "state": {
+                            "hidden": true
+                        },
+                        "label": "Base Card",
+                        "set": "DEFAULT",
+                        "modifier": [],
+                        "value": {
+                            "rank": "7",
+                            "effect": "+7 Chips",
+                            "suit": "S"
+                        },
+                        "key": "S_7",
+                        "cost": {
+                            "buy": 1,
+                            "sell": 1
+                        }
+                    }
+                ],
+                "highlighted_limit": 5
+            },
+            "blinds": {
+                "boss": {
+                    "tag_effect": "",
+                    "status": "CURRENT",
+                    "name": "The Psychic",
+                    "type": "BOSS",
+                    "tag_name": "",
+                    "effect": "必须出 5 张牌",
+                    "score": 40000
+                },
+                "small": {
+                    "tag_effect": "获得一个免费的 幻灵包",
+                    "status": "DEFEATED",
+                    "name": "Small Blind",
+                    "type": "SMALL",
+                    "tag_name": "Ethereal Tag",
+                    "effect": "",
+                    "score": 20000
+                },
+                "big": {
+                    "tag_effect": "商店里的下一张 基础版本小丑牌 将会免费且变为负片",
+                    "status": "DEFEATED",
+                    "name": "Big Blind",
+                    "type": "BIG",
+                    "tag_name": "Negative Tag",
+                    "effect": "",
+                    "score": 30000
+                }
+            }
+        },
+        "joker_signature": [
+            "Swashbuckler",
+            "Banner",
+            "Supernova",
+            "Pareidolia",
+            "Scary Face"
+        ],
+        "boss": {
+            "name": "The Psychic",
+            "effect": "必须出 5 张牌",
+            "score": 40000,
+            "status": "CURRENT"
+        }
+    },
+    "inspected_deck": false,
+    "decision": {
+        "action": "play",
+        "target": null,
+        "cards": [
+            0,
+            1,
+            2,
+            4,
+            5
+        ],
+        "phase_plan": "",
+        "reason": "Need 10792 chips to clear blind. Playing Pair of 3s with Queen, Jack, 10 gives estimated 12640 chips, sufficient to win.",
+        "commentary": "Our best hand is a Pair of 3s with high-value face cards, scoring well above the deficit. No need to discard or use Hermit.",
+        "_tool_name": "play_decision",
+        "_decision_format": "json"
+    },
+    "action": {
+        "type": "play",
+        "params": {
+            "cards": [
+                0,
+                1,
+                2,
+                4,
+                5
+            ]
+        }
+    },
+    "result": {
+        "chips_delta": 9996,
+        "before": {
+            "state": "SELECTING_HAND",
+            "ante": 6,
+            "round": 18,
+            "money": 0,
+            "chips": 29208,
+            "hands_left": 1,
+            "discards_left": 4,
+            "won": false
+        },
+        "after": {
+            "state": "GAME_OVER",
+            "ante": 6,
+            "round": 18,
+            "money": 0,
+            "chips": 39204,
+            "hands_left": 0,
+            "discards_left": 4,
+            "won": false
+        },
+        "survived_step": false
+    }
+}

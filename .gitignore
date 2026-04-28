@@ -1,0 +1,36 @@
+# Secrets and local notes
+.env
+.env.*
+*.env
+note.txt
+*secret*
+*secrets*
+*key*
+*keys*
+
+# Runtime state and generated logs
+state.json
+state_probe*.json
+logs/
+runs/
+reflection_reports/
+**/out/
+**/out_*/
+**/runs/
+**/memory/
+**/reflection_reports/
+**/*.jsonl
+
+# Python cache and local tooling
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
