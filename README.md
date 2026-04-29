@@ -251,6 +251,13 @@ $env:QWEN_API_KEY="your-qwen-key"
 python commentary_overlay.py --state-file state.json --qwen-model qwen3.5-flash
 ```
 
+macOS/Linux shell version:
+
+```bash
+export QWEN_API_KEY="your-qwen-key"
+python commentary_overlay.py --state-file state.json --qwen-model qwen3.5-flash
+```
+
 ## Useful Commands
 
 Run one debug game:

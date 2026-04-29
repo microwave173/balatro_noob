@@ -2,6 +2,7 @@
 import json
 import os
 import queue
+import sys
 import threading
 import time
 import ctypes
@@ -37,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--text-color", default="#fff3a3")
     p.add_argument("--meta-color", default="#b7f7ff")
     p.add_argument("--transparent-color", default="#010203")
+    p.add_argument("--opacity", type=float, default=0.9, help="Fallback window opacity when color-key transparency is unavailable")
     p.add_argument("--qwen-model", default=os.getenv("QWEN_TRANSLATE_MODEL", "qwen3.5-flash"))
     p.add_argument("--qwen-url", default=os.getenv("QWEN_BASE_URL", os.getenv("DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")))
     p.add_argument("--qwen-api-key", default=os.getenv("QWEN_API_KEY", os.getenv("DASHSCOPE_API_KEY", "")))
@@ -68,20 +70,20 @@ class CommentaryOverlay:
         self.root.title("Balatro Commentary")
         self.root.attributes("-topmost", True)
         self.root.overrideredirect(True)
-        self.root.configure(bg=args.transparent_color)
-        self.root.wm_attributes("-transparentcolor", args.transparent_color)
+        self.transparent_bg = args.transparent_color
+        self._configure_transparency()
 
-        self.frame = tk.Frame(self.root, bg=args.transparent_color, padx=0, pady=0)
+        self.frame = tk.Frame(self.root, bg=self.transparent_bg, padx=0, pady=0)
         self.frame.pack(fill="both", expand=True)
         self.status = tk.Label(
             self.frame,
             text=self._status_text(),
-            bg=args.transparent_color,
+            bg=self.transparent_bg,
             fg=args.meta_color,
             anchor="w",
             font=("Microsoft YaHei UI", 9),
         )
-        self.body = tk.Frame(self.frame, bg=args.transparent_color)
+        self.body = tk.Frame(self.frame, bg=self.transparent_bg)
         self.body.pack(fill="both", expand=True)
 
         self._place_window()
@@ -99,6 +101,23 @@ class CommentaryOverlay:
         finally:
             self.stop_event.set()
             self.executor.shutdown(wait=False, cancel_futures=True)
+
+    def _configure_transparency(self) -> None:
+        """Use color-key transparency where Tk supports it, otherwise fall back."""
+        self.root.configure(bg=self.transparent_bg)
+        try:
+            self.root.wm_attributes("-transparentcolor", self.transparent_bg)
+            return
+        except tk.TclError:
+            pass
+
+        if sys.platform == "darwin":
+            self.transparent_bg = "#101014"
+            self.root.configure(bg=self.transparent_bg)
+            try:
+                self.root.wm_attributes("-alpha", max(0.2, min(1.0, float(self.args.opacity))))
+            except tk.TclError:
+                pass
 
     def _status_text(self) -> str:
         if self.args.no_translate:
@@ -244,7 +263,7 @@ class CommentaryOverlay:
             tk.Label(
                 self.body,
                 text="Waiting for commentary...",
-                bg=self.args.transparent_color,
+                bg=self.transparent_bg,
                 fg=self.args.text_color,
                 anchor="w",
                 justify="left",
@@ -269,7 +288,7 @@ class CommentaryOverlay:
         self.root.geometry(f"{width}x{height}+{x}+{y}")
 
     def _render_item(self, item: CommentaryItem) -> None:
-        box = tk.Frame(self.body, bg=self.args.transparent_color, padx=0, pady=0)
+        box = tk.Frame(self.body, bg=self.transparent_bg, padx=0, pady=0)
         box.pack(fill="x", pady=(0, 10))
         meta = f"{item.updated_at}  {item.label}"
         if item.translated:
@@ -279,7 +298,7 @@ class CommentaryOverlay:
         tk.Label(
             box,
             text=meta,
-            bg=self.args.transparent_color,
+            bg=self.transparent_bg,
             fg=self.args.meta_color,
             anchor="w",
             font=("Microsoft YaHei UI", max(8, int(self.args.font_size) - 4)),
@@ -287,7 +306,7 @@ class CommentaryOverlay:
         tk.Label(
             box,
             text=item.text,
-            bg=self.args.transparent_color,
+            bg=self.transparent_bg,
             fg=self.args.text_color,
             anchor="w",
             justify="left",
