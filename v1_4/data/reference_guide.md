@@ -135,9 +135,71 @@ Reroll discipline:
 - Below $8: default no reroll.
 - If shop repeatedly has no Jokers, do not spend $15+ on empty rerolls.
 
+
+## Joker Selling, Replacement, and Reroll Irreversibility
+
+Do not sell Jokers randomly.
+
+Do **not** sell an existing Joker just because:
+- money is available,
+- you are uncertain,
+- it seems mediocre but there is no clear replacement,
+- or you want to “make space just in case.”
+
+Sell or replace a Joker when:
+- the shop has a clearly stronger replacement,
+- the current Joker is off-route or no longer contributes,
+- an economy Joker is blocking a needed scoring slot,
+- the next Boss requires immediate power,
+- or the replacement fills a missing component such as Chips, +Mult, XMult, scaling, or boss counterplay.
+
+When replacing:
+1. identify the weakest or least relevant Joker,
+2. compare its actual contribution to the new Joker,
+3. sell only if the new Joker improves survival, Boss readiness, or long-term engine quality.
+
+If the replacement is clearly stronger, do not be stingy. Money and weak Jokers should be converted into power before dangerous Boss blinds.
+
+Rerolling the shop is **irreversible**.
+
+After a reroll, the previous shop items disappear. Do not reason as if you can reroll first and then buy the old item later.
+
+Before rerolling, ask:
+- Is there already a useful item in the current shop?
+- Would buying it improve survival or the current build?
+- If I reroll, am I willing to lose this item forever?
+- Do I have enough money to reroll and still buy a good item?
+
+If the shop already has a clearly useful item, buy it instead of rerolling blindly.
+
+
+## Hypothesis-Based Decision Policy
+
+Before making a non-trivial action, briefly test 2-3 concrete hypotheses instead of relying on vague intuition.
+
+Use this internally:
+- Hypothesis A: If I take this action, what likely happens next?
+- Hypothesis B: If I do not take this action, can the current build still survive?
+- Hypothesis C: What is the main risk if this assumption is wrong?
+
+Examples:
+- If I buy this Joker, does it improve the missing component: Chips, +Mult, XMult, scaling, economy, or boss counterplay?
+- If I skip this Joker and reroll, remember the current shop item disappears. Is the current item already good enough?
+- If I sell a current Joker, is the replacement clearly stronger or better aligned with the build?
+- If I buy a Planet card, does it help the actual hand I play and improve the next blind, or am I delaying Joker improvement?
+- If I discard, what specific better hand am I trying to make, and how likely is it?
+- If I play a lower hand type to trigger a Joker, does the Joker benefit really outweigh the lost Chips/Mult from the higher hand type?
+
+Do not generate long analysis. The goal is fast counterfactual checking:
+1. What happens if I take this action?
+2. What happens if I do not?
+3. Which option gives the safer path to the next blind or Boss?
+
+When uncertain, prefer the action with a clear survival path over speculative upside.
+
 ## One-Line Policy
 
 Early: buy immediate scoring and useful Joker quantity.  
 Mid: commit to a route, build economy, find core Jokers, and check Boss readiness.  
 Late: find XMult/scaling/strong synergy; replace weak Jokers instead of relying on ordinary Jokers plus Planet cards.  
-During play: score only the actual scoring cards, respect "contains" triggers, and prefer the strongest useful hand unless Joker value clearly justifies a downgrade.
+During play: score only the actual scoring cards, respect "contains" triggers, and prefer the strongest useful hand unless Joker value clearly justifies a downgrade. Before important actions, use short hypothesis checks. In shop, do not randomly sell Jokers, and remember rerolling permanently removes current shop items.

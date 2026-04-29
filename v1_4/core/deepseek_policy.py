@@ -85,6 +85,8 @@ class DeepSeekPolicy:
             "older_actions": older_actions,
             "requirements": [
                 "Write a compact factual summary of important decisions, outcomes, scoring strength, Joker changes, consumable use attempts, errors, and lessons that still matter in this same run.",
+                "Use the latest commentary and reason fields to infer the next intended plan if one is visible, such as target hand type, whether to save or spend discards, shop upgrade priorities, boss preparation, or consumable timing.",
+                "Include that inferred next plan explicitly as 'Next plan: ...' when there is enough evidence; otherwise omit it instead of inventing one.",
                 "Prefer exact outcomes from the records over speculation.",
                 "Do not include hidden reasoning. Keep it under 1400 characters.",
             ],

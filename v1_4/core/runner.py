@@ -615,7 +615,15 @@ def _fallback_history_summary(summary: str, older: List[Dict[str, Any]]) -> str:
             f"cards={r.get('cards')} target={r.get('target')} score_delta={r.get('score_delta')} "
             f"error={r.get('error') or ''}"
         )
-    merged = " ".join([str(summary or "").strip(), "Older actions:", " | ".join(facts)]).strip()
+    plan_bits = []
+    for r in older[-4:]:
+        for key in ("commentary", "reason"):
+            value = str(r.get(key) or "").strip()
+            if value:
+                plan_bits.append(value)
+    next_plan = " ".join(plan_bits)[-420:]
+    plan_text = f"Next plan from recent reasons/commentary: {next_plan}" if next_plan else ""
+    merged = " ".join([str(summary or "").strip(), "Older actions:", " | ".join(facts), plan_text]).strip()
     return _clip(merged, 1600)
 
 
