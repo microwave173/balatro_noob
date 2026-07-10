@@ -12,10 +12,13 @@ if __package__ is None or __package__ == "":
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from v1_4.core.deepseek_policy import DeepSeekPolicy
+from v1_4.core.env import load_dotenv
 from v1_4.core.effect_catalog import EffectCatalog
 from v1_4.core.memory import SkillMemory
 from v1_4.core.rpc import JsonRpcClient
 from v1_4.core.runner import V14Runner, save_run_record
+
+load_dotenv()
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,12 +31,14 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--deck", default="RED")
     p.add_argument("--stake", default="WHITE")
-    p.add_argument("--provider", default=os.getenv("LLM_PROVIDER", "deepseek"), choices=["deepseek", "qwen"])
+    p.add_argument("--provider", default=os.getenv("LLM_PROVIDER", "deepseek"), choices=["deepseek", "qwen", "visioncoder"])
     p.add_argument("--model", default=os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro"))
     p.add_argument("--deepseek-url", default=os.getenv("DEEPSEEK_BASE_URL", os.getenv("DEEPSEEK_URL", "https://api.deepseek.com")))
     p.add_argument("--deepseek-api-key", default=os.getenv("DEEPSEEK_API_KEY", ""))
     p.add_argument("--qwen-url", default=os.getenv("QWEN_BASE_URL", os.getenv("DASHSCOPE_BASE_URL", "https://dashscope.aliyuncs.com/compatible-mode/v1")))
     p.add_argument("--qwen-api-key", default=os.getenv("QWEN_API_KEY", os.getenv("DASHSCOPE_API_KEY", "")))
+    p.add_argument("--visioncoder-url", default=os.getenv("VISIONCODER_BASE_URL", "https://coder.api.visioncoder.cn/v1"))
+    p.add_argument("--visioncoder-api-key", default=os.getenv("VISIONCODER_API_KEY", ""))
     p.add_argument("--llm-timeout", type=float, default=90.0)
     p.add_argument("--llm-log-io", action="store_true", help="Print LLM outputs only; prompts are not printed")
     p.add_argument("--think", dest="think", action="store_true", default=True, help="Enable model thinking mode for play/shop decisions when the provider supports it")
@@ -54,10 +59,12 @@ def main() -> None:
     random.seed(args.seed)
     if args.provider == "qwen" and args.model == "deepseek-v4-flash":
         args.model = "qwen3.6-plus"
-    api_key = args.qwen_api_key if args.provider == "qwen" else args.deepseek_api_key
-    base_url = args.qwen_url if args.provider == "qwen" else args.deepseek_url
+    if args.provider == "visioncoder" and args.model == "deepseek-v4-pro":
+        args.model = os.getenv("VISIONCODER_MODEL", "gpt-5.6-sol")
+    api_key = _provider_api_key(args)
+    base_url = _provider_base_url(args)
     if not api_key:
-        env_name = "QWEN_API_KEY or DASHSCOPE_API_KEY" if args.provider == "qwen" else "DEEPSEEK_API_KEY"
+        env_name = _provider_key_name(args.provider)
         print(f"[fatal] {env_name} is empty")
         return
 
@@ -144,6 +151,30 @@ def _safe_load_json(path: Path) -> Dict[str, Any]:
         return obj if isinstance(obj, dict) else {}
     except Exception:
         return {}
+
+
+def _provider_api_key(args: argparse.Namespace) -> str:
+    if args.provider == "qwen":
+        return args.qwen_api_key
+    if args.provider == "visioncoder":
+        return args.visioncoder_api_key
+    return args.deepseek_api_key
+
+
+def _provider_base_url(args: argparse.Namespace) -> str:
+    if args.provider == "qwen":
+        return args.qwen_url
+    if args.provider == "visioncoder":
+        return args.visioncoder_url
+    return args.deepseek_url
+
+
+def _provider_key_name(provider: str) -> str:
+    if provider == "qwen":
+        return "QWEN_API_KEY or DASHSCOPE_API_KEY"
+    if provider == "visioncoder":
+        return "VISIONCODER_API_KEY"
+    return "DEEPSEEK_API_KEY"
 
 
 def _write_json_atomic(path: Path, obj: Dict[str, Any]) -> None:
@@ -270,4 +301,3 @@ def _effective_thinking_budget(provider: str, think: bool, reasoning_effort: str
 
 if __name__ == "__main__":
     main()
-

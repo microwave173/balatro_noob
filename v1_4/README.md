@@ -64,7 +64,8 @@ python -m v1_4.loop --provider qwen --model qwen3.6-plus --iterations 5 --games-
 - `v1_4/out/runs/`: full run records.
 - `v1_4/out/memory/play_memory.jsonl`: play observations, decisions, and results.
 - `v1_4/out/memory/shop_memory.jsonl`: shop observations, decisions, and results.
-- `v1_4/out/rulebook.md`: the only reflected guidance source. Reflect rewrites this rulebook as a full update each time.
+- `v1_4/out/memory/ante_reviews.jsonl`: complete per-Ante trajectories and LLM effort ratings from 1-10; a lost Ante is forced to 10.
+- `v1_4/out/rulebook.md`: reflected guidance. Reflect incrementally adds, updates, or deletes at most six evidence-backed rules per cycle.
 - `v1_4/out/latest_last3_llm_io.txt`: latest extracted debug snapshot when requested.
 - `state.json`: monitor snapshot written by `v1_4.loop` and live RPC updates from `v1_4.agent`.
 
@@ -73,7 +74,7 @@ python -m v1_4.loop --provider qwen --model qwen3.6-plus --iterations 5 --games-
 - Play stage is observation-first: Python builds a compact state view, DeepSeek returns one tool call, and Python validates its arguments before calling BalatroBot.
 - Structured decisions support `--decision-format auto|json|tool`. `auto` uses JSON Output for DeepSeek and tool calls for Qwen; `json` is useful when DeepSeek thinking must stay enabled.
 - v1.4 does not ask the model for a separate blind-opening strategy plan before the first play decision. Instead, each decision sees the current state plus current-run history.
-- Current-run history keeps the latest operations verbatim in the prompt. When it grows too large, older operations are compressed into a short LLM-written summary and only the most recent operations remain expanded.
+- Current-run history keeps 12 compact recent operations. It compresses after 36 records or 14,000 rendered characters, while completed Ante effort reviews remain as durable prompt context.
 - Play/shop thinking mode is enabled by default and can be disabled with `--no-think`. DeepSeek v4 pro follows the official thinking call shape: `extra_body={"thinking": {"type": "enabled"}}` plus `reasoning_effort="high"` or `"max"`; it does not use `thinking_budget`. In JSON mode it also requests `response_format={"type": "json_object"}` and reserves a large output-token budget for hidden reasoning plus final JSON. For Qwen, `--reasoning-effort low|medium|high` maps to `thinking_budget` 1024, 4096, or 8192 unless `--thinking-budget` is set explicitly.
 - Play prompts include deterministic made-hand options from the current non-debuffed hand cards, so the model can see available Flush, Straight, Pair, Two Pair, Full House, and related plays by card index.
 - Play decisions can use held Tarot/Spectral consumables with `use(consumableN, cards=[hand indexes])` when the card needs selected playing cards.
@@ -82,9 +83,10 @@ python -m v1_4.loop --provider qwen --model qwen3.6-plus --iterations 5 --games-
 - Pack decisions can pass `targets=[hand indexes]` for Tarot/Spectral pack cards that immediately apply to selected playing cards.
 - Play decisions may still provide a short `phase_plan`; it is folded into the compact run plan, while concrete recent actions come from the current-run history section.
 - Shop decisions include current Jokers, current boss, next boss, shop cards, packs, vouchers, reroll cost, and slots.
-- Reflect uses thinking by default, samples best/worst memories by Joker signature, and rewrites `rulebook.md` as the sole long-term guidance source.
+- After each Boss clear or GAME_OVER, the model rates the complete Ante effort from 1-10 using plays, discards, resource margin, hand-building difficulty, luck dependence, boss pressure, and shop decisions.
+- Reflect uses thinking by default, contrasts the three hardest and three easiest Ante trajectories, and applies bounded incremental edits instead of regenerating the full rulebook.
+- Loop runs each game in a separate agent subprocess. If a win crashes Balatro or health is lost, it restarts BalatroBot/Balatro before the next game and retries once when no run file was produced.
 - Structured skill JSON files are not used in v1.4; prompts only reference the rulebook.
 - `v1_4/data/reference_guide.md` is loaded into the system prompt as permanent White Stake guidance before reflected rulebook context.
 - Card effects are filled from BalatroBot API state and local `openrpc.json`.
 - The monitor state is split into loop-level progress (`loop`, `counts`, `current`, `best`, `rules`) and live progress (`live`), including the latest LLM `commentary` shown by the monitor UI.
-

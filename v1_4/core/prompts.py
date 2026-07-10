@@ -100,11 +100,33 @@ For Tarot or Spectral pack cards that affect selected playing cards, put current
 """
 
 
-REFLECT_SCHEMA = """Tool arguments:
+ANTE_EFFORT_SCHEMA = """Tool arguments:
 {
-  "rules": ["complete human-readable rulebook rule"],
-  "commentary": "2-4 short sentences summarizing what changed"
+  "effort_score": 1,
+  "luck_dependence": "low|medium|high|unknown",
+  "difficulty_factors": ["concrete factor"],
+  "evidence": ["trajectory evidence"],
+  "summary": "concise assessment",
+  "improvement": "what would make a similar Ante easier",
+  "commentary": "brief assessment for the human operator"
 }
-Return a complete updated rulebook, not only newly discovered rules. Focus especially on Joker-aware play/discard decisions and boss-aware shop decisions.
+Score the complete Ante from 1 (effortless) to 10 (maximum difficulty). A loss is always 10.
+Use actual plays, discards, hands remaining, score margins, hand-formation difficulty, errors, boss pressure, and dependence on lucky draws or shop rolls.
+Do not treat a confident decision commentary or an optimistic estimated score as evidence when the recorded outcome disagrees.
 """
 
+
+REFLECT_SCHEMA = """Tool arguments:
+{
+  "operations": [
+    {
+      "op": "add|update|delete",
+      "target_id": "R1 or empty for add",
+      "rule": "new or replacement rule; empty for delete",
+      "reason": "trajectory evidence supporting this edit"
+    }
+  ],
+  "commentary": "2-4 short sentences summarizing the incremental edits"
+}
+Edit only rules supported by the selected hardest/easiest Ante contrast. Do not regenerate the complete rulebook.
+"""

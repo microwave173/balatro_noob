@@ -34,3 +34,7 @@ __pycache__/
 Thumbs.db
 .vscode/
 .idea/
+
+# Unrelated local assets
+/cosyvoice_lbw_checkpoint_20260601/
+/temp/

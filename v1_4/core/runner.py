@@ -6,6 +6,12 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from .deepseek_policy import DeepSeekPolicy
+from .effort import (
+    ante_review_outcome,
+    build_ante_trajectory,
+    compact_ante_reviews,
+    normalize_effort_review,
+)
 from .effect_catalog import EffectCatalog
 from .memory import SkillMemory, append_jsonl
 from .observation import build_observation
@@ -18,9 +24,10 @@ from .validator import (
 )
 
 
-HISTORY_KEEP_RECENT = 8
-HISTORY_COMPRESS_TRIGGER_RECORDS = 12
-HISTORY_MAX_CHARS = 7200
+HISTORY_KEEP_RECENT = 12
+HISTORY_COMPRESS_TRIGGER_RECORDS = 36
+HISTORY_MAX_CHARS = 14000
+HISTORY_SUMMARY_MAX_CHARS = 2200
 
 
 class V14Runner:
@@ -56,6 +63,7 @@ class V14Runner:
         history_compactor = _AsyncHistoryCompactor(self.policy)
         recent_play_results: List[Dict[str, Any]] = []
         events: List[Dict[str, Any]] = []
+        ante_reviews: List[Dict[str, Any]] = []
         buys: List[str] = []
 
         def remember(event: Dict[str, Any]) -> None:
@@ -65,6 +73,41 @@ class V14Runner:
                 recent_history,
                 event,
             )
+
+        def finish_event(event: Dict[str, Any], *, memory_kind: str = "") -> None:
+            events.append(event)
+            remember(event)
+            if memory_kind == "play":
+                self._write_play_memory(event)
+            elif memory_kind == "shop":
+                self._write_shop_memory(event)
+            outcome = ante_review_outcome(event)
+            if not outcome:
+                return
+            ante, failed = outcome
+            trajectory = build_ante_trajectory(ante, events, failed=failed)
+            try:
+                raw_review = self.policy.evaluate_ante_effort(trajectory)
+            except Exception as e:
+                raw_review = {"summary": f"Ante effort evaluation failed: {e}"}
+            review = normalize_effort_review(raw_review, trajectory)
+            record = {
+                "created_at": datetime.now().isoformat(timespec="seconds"),
+                "review": review,
+                "trajectory": trajectory,
+            }
+            ante_reviews.append(record)
+            append_jsonl(self.mem_dir / "ante_reviews.jsonl", record)
+            review_event = {
+                "step": event.get("step"),
+                "stage": "ANTE_REVIEW",
+                "action": "evaluate_effort",
+                "before": event.get("after") or {},
+                "after": event.get("after") or {},
+                "review": review,
+            }
+            events.append(review_event)
+            remember(review_event)
 
         for step in range(1, self.max_steps + 1):
             st = state.get("state")
@@ -78,7 +121,7 @@ class V14Runner:
 
             try:
                 if st == "BLIND_SELECT":
-                    obs = self._obs(state, "BLIND_SELECT", run_plan, "", history_summary=history_summary, recent_history=recent_history)
+                    obs = self._obs(state, "BLIND_SELECT", run_plan, "", history_summary=history_summary, recent_history=recent_history, ante_reviews=ante_reviews)
                     decision = self.policy.blind_select(obs["compact"])
                     action, params = validate_blind_action(decision, obs["state"])
                     before = _state_brief(obs["state"])
@@ -86,8 +129,7 @@ class V14Runner:
                     shop_plan = ""
                     action_feedback = ""
                     event = _event(step, "BLIND_SELECT", obs, decision, action, params, before, _state_brief(state))
-                    events.append(event)
-                    remember(event)
+                    finish_event(event)
                     continue
 
                 if st == "SELECTING_HAND":
@@ -102,6 +144,7 @@ class V14Runner:
                         action_feedback,
                         history_summary=history_summary,
                         recent_history=recent_history,
+                        ante_reviews=ante_reviews,
                     )
                     decision = self.policy.play_decision(obs["compact"])
                     inspected_deck = False
@@ -115,6 +158,7 @@ class V14Runner:
                             include_deck_detail=True,
                             history_summary=history_summary,
                             recent_history=recent_history,
+                            ante_reviews=ante_reviews,
                         )
                         decision = self.policy.play_decision(inspect_obs["compact"])
                         obs = inspect_obs
@@ -135,8 +179,7 @@ class V14Runner:
                                 )
                                 event = _event(step, "PLAY", obs, decision, action, params, before, before)
                                 event["action_error"] = msg
-                                events.append(event)
-                                remember(event)
+                                finish_event(event, memory_kind="play")
                                 continue
                             raise
                     else:
@@ -145,12 +188,10 @@ class V14Runner:
                     after = _state_brief(state)
                     event = _event(step, "PLAY", obs, decision, action, params, before, after)
                     event["inspected_deck"] = inspected_deck
-                    events.append(event)
-                    remember(event)
+                    finish_event(event, memory_kind="play")
                     if action == "play":
                         recent_play_results.append(_play_result_summary(event))
                         recent_play_results = recent_play_results[-3:]
-                    self._write_play_memory(event)
                     continue
 
                 if st == "ROUND_EVAL":
@@ -159,8 +200,7 @@ class V14Runner:
                     before = _state_brief(state)
                     state = self.rpc.call("cash_out", retries=1)
                     event = {"step": step, "stage": "ROUND_EVAL", "action": "cash_out", "before": before, "after": _state_brief(state)}
-                    events.append(event)
-                    remember(event)
+                    finish_event(event)
                     continue
 
                 if st == "SHOP":
@@ -169,8 +209,7 @@ class V14Runner:
                         before = _state_brief(state)
                         state = self.rpc.call("use", auto_use, retries=1)
                         event = {"step": step, "stage": "SHOP", "action": "use", "params": auto_use, "before": before, "after": _state_brief(state), "auto": True}
-                        events.append(event)
-                        remember(event)
+                        finish_event(event)
                         continue
 
                     shop_key = f"{state.get('ante_num')}-{state.get('round_num')}"
@@ -186,6 +225,7 @@ class V14Runner:
                         recent_play_results=recent_play_results,
                         history_summary=history_summary,
                         recent_history=recent_history,
+                        ante_reviews=ante_reviews,
                     )
                     decision = self.policy.shop_decision(obs["compact"])
                     if decision.get("shop_plan"):
@@ -215,9 +255,7 @@ class V14Runner:
                                 )
                                 event = _event(step, "SHOP", obs, decision, action, params, before, before)
                                 event["action_error"] = msg
-                                events.append(event)
-                                remember(event)
-                                self._write_shop_memory(event)
+                                finish_event(event, memory_kind="shop")
                                 continue
                             raise
                     elif action == "sell":
@@ -231,28 +269,24 @@ class V14Runner:
                         action_feedback = ""
                     after = _state_brief(state)
                     event = _event(step, "SHOP", obs, decision, action, params, before, after)
-                    events.append(event)
-                    remember(event)
-                    self._write_shop_memory(event)
+                    finish_event(event, memory_kind="shop")
                     continue
 
                 if st == "SMODS_BOOSTER_OPENED":
-                    obs = self._obs(state, "PACK", run_plan, shop_plan, history_summary=history_summary, recent_history=recent_history)
+                    obs = self._obs(state, "PACK", run_plan, shop_plan, history_summary=history_summary, recent_history=recent_history, ante_reviews=ante_reviews)
                     decision = self.policy.pack_decision(obs["compact"])
                     action, params = validate_pack_action(decision, obs["state"])
                     before = _state_brief(obs["state"])
                     state = self.rpc.call(action, params, retries=0)
                     event = _event(step, "PACK", obs, decision, action, params, before, _state_brief(state))
-                    events.append(event)
-                    remember(event)
+                    finish_event(event)
                     continue
 
                 time.sleep(0.08)
                 state = self.rpc.call("gamestate", retries=1)
             except Exception as e:
                 event = {"step": step, "stage": st, "error": str(e), "state": _state_brief(state)}
-                events.append(event)
-                remember(event)
+                finish_event(event)
                 time.sleep(0.15)
                 try:
                     state = self.rpc.call("gamestate", retries=1)
@@ -276,6 +310,7 @@ class V14Runner:
             "buy_count": len(buys),
             "buy_examples": buys[:10],
             "history_summary": history_summary,
+            "ante_reviews": ante_reviews,
             "events": events,
         }
 
@@ -302,6 +337,7 @@ class V14Runner:
         recent_play_results: List[Dict[str, Any]] | None = None,
         history_summary: str = "",
         recent_history: List[Dict[str, Any]] | None = None,
+        ante_reviews: List[Dict[str, Any]] | None = None,
     ) -> Dict[str, Any]:
         return build_observation(
             state,
@@ -314,6 +350,7 @@ class V14Runner:
             recent_play_results=recent_play_results or [],
             action_history_summary=history_summary,
             recent_actions=_render_recent_history(recent_history or []),
+            ante_effort_reviews=compact_ante_reviews([x.get("review") or {} for x in (ante_reviews or [])]),
         )
 
     def _write_play_memory(self, event: Dict[str, Any]) -> None:
@@ -462,7 +499,7 @@ class _AsyncHistoryCompactor:
         keep = recent[-HISTORY_KEEP_RECENT:]
         older = recent[:-HISTORY_KEEP_RECENT]
         if not older:
-            return summary[-1600:], keep
+            return summary[-HISTORY_SUMMARY_MAX_CHARS:], keep
 
         if self.future is None:
             self.pending_summary = summary
@@ -471,7 +508,7 @@ class _AsyncHistoryCompactor:
             self.future = self.executor.submit(_summarize_history_safe, self.policy, summary, older)
         else:
             self.pending_older.extend(older)
-        return summary[-1600:], keep
+        return summary[-HISTORY_SUMMARY_MAX_CHARS:], keep
 
     def drain(self, summary: str, recent: List[Dict[str, Any]]) -> tuple[str, List[Dict[str, Any]]]:
         if self.future is None:
@@ -486,7 +523,7 @@ class _AsyncHistoryCompactor:
         self.pending_summary = ""
         self.pending_older = []
         self.in_flight_count = 0
-        return summary[-1600:], recent
+        return summary[-HISTORY_SUMMARY_MAX_CHARS:], recent
 
     def close(self, *, wait: bool) -> None:
         self.executor.shutdown(wait=wait, cancel_futures=not wait)
@@ -508,7 +545,7 @@ class _AsyncHistoryCompactor:
             self.pending_older = extra_older
             self.in_flight_count = len(extra_older)
             self.future = self.executor.submit(_summarize_history_safe, self.policy, out, extra_older)
-        return out[-1600:]
+        return out[-HISTORY_SUMMARY_MAX_CHARS:]
 
 
 def _summarize_history_safe(policy: DeepSeekPolicy, summary: str, older: List[Dict[str, Any]]) -> str:
@@ -531,12 +568,12 @@ def _record_action_history(
     keep = recent[-HISTORY_KEEP_RECENT:]
     older = recent[:-HISTORY_KEEP_RECENT]
     if not older:
-        return summary[-1600:], keep
+        return summary[-HISTORY_SUMMARY_MAX_CHARS:], keep
     try:
         new_summary = policy.summarize_history(summary, older)
     except Exception:
         new_summary = _fallback_history_summary(summary, older)
-    return new_summary[-1600:], keep
+    return new_summary[-HISTORY_SUMMARY_MAX_CHARS:], keep
 
 
 def _history_record(event: Dict[str, Any]) -> Dict[str, Any]:
@@ -557,9 +594,7 @@ def _history_record(event: Dict[str, Any]) -> Dict[str, Any]:
         "after": _history_state(after),
     }
     if decision.get("reason"):
-        record["reason"] = _clip(decision.get("reason"), 240)
-    if decision.get("commentary"):
-        record["commentary"] = _clip(decision.get("commentary"), 180)
+        record["why"] = _clip(decision.get("reason"), 140)
     if event.get("action_error") or event.get("error"):
         record["error"] = _clip(event.get("action_error") or event.get("error"), 220)
     if event.get("inspected_deck"):
@@ -568,6 +603,14 @@ def _history_record(event: Dict[str, Any]) -> Dict[str, Any]:
         record["auto"] = True
     if record["action"] == "play":
         record["score_delta"] = _score_delta(before, after)
+    if event.get("stage") == "ANTE_REVIEW":
+        review = event.get("review") or {}
+        record["effort"] = {
+            "ante": review.get("ante"),
+            "score": review.get("effort_score"),
+            "outcome": review.get("outcome"),
+            "summary": _clip(review.get("summary"), 360),
+        }
     return {k: v for k, v in record.items() if v not in (None, "", [], {})}
 
 
@@ -597,14 +640,17 @@ def _render_recent_history(recent: List[Dict[str, Any]]) -> List[str]:
             parts.append(f"jokers={r.get('jokers')}")
         if r.get("error"):
             parts.append(f"error={r.get('error')}")
-        if r.get("reason"):
-            parts.append(f"reason={r.get('reason')}")
+        if r.get("why"):
+            parts.append(f"why={r.get('why')}")
+        if r.get("effort"):
+            parts.append(f"effort={r.get('effort')}")
         out.append("; ".join(parts))
     return out
 
 
 def _history_chars(summary: str, recent: List[Dict[str, Any]]) -> int:
-    return len(summary or "") + len(json.dumps(recent, ensure_ascii=False, default=str))
+    # Measure what actually enters the next decision prompt, not hidden record fields.
+    return len(summary or "") + sum(len(line) for line in _render_recent_history(recent))
 
 
 def _fallback_history_summary(summary: str, older: List[Dict[str, Any]]) -> str:
@@ -617,14 +663,13 @@ def _fallback_history_summary(summary: str, older: List[Dict[str, Any]]) -> str:
         )
     plan_bits = []
     for r in older[-4:]:
-        for key in ("commentary", "reason"):
-            value = str(r.get(key) or "").strip()
-            if value:
-                plan_bits.append(value)
+        value = str(r.get("why") or "").strip()
+        if value:
+            plan_bits.append(value)
     next_plan = " ".join(plan_bits)[-420:]
-    plan_text = f"Next plan from recent reasons/commentary: {next_plan}" if next_plan else ""
+    plan_text = f"Next plan from recent decision intent: {next_plan}" if next_plan else ""
     merged = " ".join([str(summary or "").strip(), "Older actions:", " | ".join(facts), plan_text]).strip()
-    return _clip(merged, 1600)
+    return _clip(merged, HISTORY_SUMMARY_MAX_CHARS)
 
 
 def _history_state(state: Dict[str, Any]) -> Dict[str, Any]:

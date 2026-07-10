@@ -1,11 +1,19 @@
 ﻿import argparse
 import json
 import os
+import platform
+import shlex
 import subprocess
 import sys
+import time
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from v1_4.core.env import load_dotenv
+
+load_dotenv()
 
 
 def parse_args() -> argparse.Namespace:
@@ -13,10 +21,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--iterations", type=int, default=5)
     p.add_argument("--games-per-iter", type=int, default=2)
     p.add_argument("--out-dir", default="v1_4/out")
-    p.add_argument("--provider", default=os.getenv("LLM_PROVIDER", "deepseek"), choices=["deepseek", "qwen"])
+    p.add_argument("--provider", default=os.getenv("LLM_PROVIDER", "deepseek"), choices=["deepseek", "qwen", "visioncoder"])
     p.add_argument("--model", default=os.getenv("DEEPSEEK_MODEL", "deepseek-v4-pro"))
     p.add_argument("--deepseek-api-key", default=os.getenv("DEEPSEEK_API_KEY", ""))
     p.add_argument("--qwen-api-key", default=os.getenv("QWEN_API_KEY", os.getenv("DASHSCOPE_API_KEY", "")))
+    p.add_argument("--visioncoder-api-key", default=os.getenv("VISIONCODER_API_KEY", ""))
     p.add_argument("--state-file", default="state.json", help="State JSON path for monitor")
     p.add_argument("--llm-log-io", action="store_true", help="Print LLM outputs only; prompts are not printed")
     p.add_argument("--think", dest="think", action="store_true", default=True, help="Enable model thinking mode for play/shop decisions when the provider supports it")
@@ -25,6 +34,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--thinking-budget", type=int, default=0, help="Qwen thinking token budget when --think is enabled; 0 maps reasoning effort to a default budget")
     p.add_argument("--decision-format", default="auto", choices=["auto", "json", "tool"], help="Structured decision transport: auto uses JSON output for DeepSeek and tool calls for Qwen")
     p.add_argument("--keep-going-on-error", action="store_true")
+    p.add_argument("--balatrobot-host", default=os.getenv("BALATROBOT_HOST", "127.0.0.1"))
+    p.add_argument("--balatrobot-port", type=int, default=int(os.getenv("BALATROBOT_PORT", "12346")))
+    p.add_argument("--balatrobot-health-timeout", type=float, default=35.0)
+    p.add_argument("--balatrobot-serve-command", default=os.getenv("BALATROBOT_SERVE_COMMAND", ""), help="Override the command used to restart BalatroBot and Balatro")
+    p.add_argument("--no-auto-restart-game", dest="auto_restart_game", action="store_false", default=True)
     return p.parse_args()
 
 
@@ -145,12 +159,14 @@ def main() -> None:
     args = parse_args()
     if args.provider == "qwen" and args.model == "deepseek-v4-flash":
         args.model = "qwen3.6-plus"
+    if args.provider == "visioncoder" and args.model == "deepseek-v4-pro":
+        args.model = os.getenv("VISIONCODER_MODEL", "gpt-5.6-sol")
     root = Path(__file__).resolve().parents[1]
     state_path = (root / args.state_file).resolve() if not Path(args.state_file).is_absolute() else Path(args.state_file)
 
-    api_key = args.qwen_api_key if args.provider == "qwen" else args.deepseek_api_key
+    api_key = _provider_api_key(args)
     if not api_key:
-        env_name = "QWEN_API_KEY or DASHSCOPE_API_KEY" if args.provider == "qwen" else "DEEPSEEK_API_KEY"
+        env_name = _provider_key_name(args.provider)
         print(f"[fatal] {env_name} is empty")
         state = _initial_state(args, root, state_path)
         state["status"] = "error"
@@ -164,6 +180,10 @@ def main() -> None:
     if args.provider == "qwen":
         env["QWEN_API_KEY"] = api_key
         env["DASHSCOPE_API_KEY"] = api_key
+    elif args.provider == "visioncoder":
+        env["VISIONCODER_API_KEY"] = api_key
+        env["VISIONCODER_BASE_URL"] = os.getenv("VISIONCODER_BASE_URL", "https://coder.api.visioncoder.cn/v1")
+        env["VISIONCODER_MODEL"] = args.model
     else:
         env["DEEPSEEK_API_KEY"] = api_key
     env["DEEPSEEK_MODEL"] = args.model
@@ -173,6 +193,7 @@ def main() -> None:
     state = _initial_state(args, root, state_path)
     _update_state_snapshot(state, args.out_dir)
     _write_json(state_path, state)
+    serve_process: Optional[subprocess.Popen[Any]] = None
 
     try:
         for i in range(1, args.iterations + 1):
@@ -181,45 +202,18 @@ def main() -> None:
             _update_state_snapshot(state, args.out_dir)
             _write_json(state_path, state)
 
-            before_runs = int(_summarize_runs(args.out_dir).get("total_runs", 0) or 0)
-
             print(f"\n===== v1.4 CYCLE {i}/{args.iterations}: PLAY =====")
-            play_cmd = [
-                sys.executable,
-                "-m",
-                "v1_4.agent",
-                "--games",
-                str(args.games_per_iter),
-                "--model",
-                args.model,
-                "--provider",
-                args.provider,
-                "--out-dir",
-                args.out_dir,
-                "--state-file",
-                str(state_path),
-                "--decision-format",
-                args.decision_format,
-            ]
-            if args.think:
-                play_cmd.extend(["--think", "--reasoning-effort", args.reasoning_effort])
-                if args.thinking_budget > 0:
-                    play_cmd.extend(["--thinking-budget", str(args.thinking_budget)])
-            else:
-                play_cmd.append("--no-think")
-            if args.llm_log_io:
-                play_cmd.append("--llm-log-io")
-            rc = subprocess.run(play_cmd, cwd=root, env=env).returncode
-            after_runs = int(_summarize_runs(args.out_dir).get("total_runs", 0) or 0)
-            if rc == 0:
-                state["counts"]["games_completed"] += max(0, after_runs - before_runs)
-            else:
+            completed, play_error, serve_process = _run_games_individually(
+                args, root, state_path, env, serve_process
+            )
+            state["counts"]["games_completed"] += completed
+            if play_error:
                 state["status"] = "error"
-                state["last_error"] = f"play stage failed in cycle {i}, exit={rc}"
+                state["last_error"] = f"play stage failed in cycle {i}: {play_error}"
                 _update_state_snapshot(state, args.out_dir)
                 _write_json(state_path, state)
                 if not args.keep_going_on_error:
-                    sys.exit(rc)
+                    sys.exit(1)
 
             _update_state_snapshot(state, args.out_dir)
             _write_json(state_path, state)
@@ -268,12 +262,165 @@ def main() -> None:
         _update_state_snapshot(state, args.out_dir)
         _write_json(state_path, state)
         raise
+    finally:
+        _stop_managed_serve(serve_process)
 
     state["status"] = "done"
     state["loop"]["stage"] = "DONE"
     state["finished_at"] = _now_str()
     _update_state_snapshot(state, args.out_dir)
     _write_json(state_path, state)
+
+
+def _run_games_individually(
+    args: argparse.Namespace,
+    root: Path,
+    state_path: Path,
+    env: Dict[str, str],
+    serve_process: Optional[subprocess.Popen[Any]] = None,
+) -> tuple[int, str, Optional[subprocess.Popen[Any]]]:
+    completed = 0
+    last_won = False
+    for game_index in range(1, args.games_per_iter + 1):
+        if last_won:
+            # Winning can crash Balatro shortly after the final RPC response.
+            time.sleep(1.0)
+        if not _balatrobot_healthy(args.balatrobot_host, args.balatrobot_port):
+            if not args.auto_restart_game:
+                return completed, f"BalatroBot unavailable before game {game_index} and auto restart is disabled", serve_process
+            serve_process, error = _restart_balatrobot(args, root, env, serve_process)
+            if error:
+                return completed, error, serve_process
+
+        print(f"\n--- GAME {game_index}/{args.games_per_iter} ---")
+        before_files = _run_files(args.out_dir)
+        rc = subprocess.run(_agent_command(args, state_path), cwd=root, env=env).returncode
+        new_files = _run_files(args.out_dir) - before_files
+        if rc != 0 or not new_files:
+            if args.auto_restart_game:
+                serve_process, restart_error = _restart_balatrobot(args, root, env, serve_process)
+                if not restart_error:
+                    before_files = _run_files(args.out_dir)
+                    rc = subprocess.run(_agent_command(args, state_path), cwd=root, env=env).returncode
+                    new_files = _run_files(args.out_dir) - before_files
+            if rc != 0 or not new_files:
+                return completed, f"game {game_index} produced no run record (exit={rc})", serve_process
+        latest = max(new_files, key=lambda p: p.stat().st_mtime)
+        last_won = bool(_read_run_json(latest).get("won"))
+        completed += 1
+    return completed, "", serve_process
+
+
+def _agent_command(args: argparse.Namespace, state_path: Path) -> List[str]:
+    cmd = [
+        sys.executable, "-m", "v1_4.agent", "--games", "1",
+        "--model", args.model, "--provider", args.provider,
+        "--out-dir", args.out_dir, "--state-file", str(state_path),
+        "--decision-format", args.decision_format,
+        "--host", args.balatrobot_host, "--port", str(args.balatrobot_port),
+    ]
+    if args.think:
+        cmd.extend(["--think", "--reasoning-effort", args.reasoning_effort])
+        if args.thinking_budget > 0:
+            cmd.extend(["--thinking-budget", str(args.thinking_budget)])
+    else:
+        cmd.append("--no-think")
+    if args.llm_log_io:
+        cmd.append("--llm-log-io")
+    return cmd
+
+
+def _balatrobot_healthy(host: str, port: int, timeout: float = 2.0) -> bool:
+    payload = json.dumps({"jsonrpc": "2.0", "method": "health", "params": {}, "id": 1}).encode("utf-8")
+    request = urllib.request.Request(
+        f"http://{host}:{port}", data=payload, headers={"Content-Type": "application/json"}, method="POST"
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        return (data.get("result") or {}).get("status") == "ok"
+    except Exception:
+        return False
+
+
+def _restart_balatrobot(
+    args: argparse.Namespace,
+    root: Path,
+    env: Dict[str, str],
+    previous: Optional[subprocess.Popen[Any]],
+) -> tuple[Optional[subprocess.Popen[Any]], str]:
+    if previous and previous.poll() is None:
+        previous.terminate()
+        try:
+            previous.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            previous.kill()
+    command = _balatrobot_serve_command(args)
+    if not command:
+        return None, "no BalatroBot restart command is available for this platform"
+    log_dir = Path(args.out_dir) / "balatrobot_logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / f"restart_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    log_file = log_path.open("a", encoding="utf-8")
+    try:
+        process = subprocess.Popen(command, cwd=root, env=env, stdout=log_file, stderr=subprocess.STDOUT)
+    except Exception as e:
+        log_file.close()
+        return None, f"failed to start BalatroBot: {e}"
+    finally:
+        if not log_file.closed:
+            log_file.close()
+    deadline = time.time() + args.balatrobot_health_timeout
+    while time.time() < deadline:
+        if _balatrobot_healthy(args.balatrobot_host, args.balatrobot_port):
+            print(f"BalatroBot restarted; log={log_path}")
+            return process, ""
+        if process.poll() is not None:
+            return process, f"BalatroBot restart exited early; see {log_path}"
+        time.sleep(0.5)
+    return process, f"BalatroBot health timeout after restart; see {log_path}"
+
+
+def _stop_managed_serve(process: Optional[subprocess.Popen[Any]]) -> None:
+    if not process or process.poll() is not None:
+        return
+    process.terminate()
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
+
+
+def _balatrobot_serve_command(args: argparse.Namespace) -> List[str]:
+    if args.balatrobot_serve_command:
+        return shlex.split(args.balatrobot_serve_command)
+    system = platform.system()
+    if system == "Darwin":
+        home = Path.home()
+        mod = home / "Library/Application Support/Balatro/Mods/balatrobot"
+        game = home / "Library/Application Support/Steam/steamapps/common/Balatro"
+        return [
+            "uvx", "--from", str(mod), "balatrobot", "serve",
+            "--host", args.balatrobot_host, "--port", str(args.balatrobot_port),
+            "--platform", "darwin", "--love-path", str(game / "run_lovely_macos.sh"),
+            "--lovely-path", str(game / "liblovely.dylib"), "--fast",
+        ]
+    if system == "Windows":
+        appdata = os.getenv("APPDATA", "")
+        if appdata:
+            return ["uvx", "--from", str(Path(appdata) / "Balatro/Mods/balatrobot"), "balatrobot", "serve", "--fast"]
+    return []
+
+
+def _run_files(out_dir: str | Path) -> set[Path]:
+    return set((Path(out_dir) / "runs").glob("*.json"))
+
+
+def _read_run_json(path: Path) -> Dict[str, Any]:
+    try:
+        return (json.loads(path.read_text(encoding="utf-8-sig")).get("result") or {})
+    except Exception:
+        return {}
 
 
 def _initial_state(args: argparse.Namespace, root: Path, state_path: Path) -> Dict[str, Any]:
@@ -319,6 +466,22 @@ def _initial_state(args: argparse.Namespace, root: Path, state_path: Path) -> Di
     }
 
 
+def _provider_api_key(args: argparse.Namespace) -> str:
+    if args.provider == "qwen":
+        return args.qwen_api_key
+    if args.provider == "visioncoder":
+        return args.visioncoder_api_key
+    return args.deepseek_api_key
+
+
+def _provider_key_name(provider: str) -> str:
+    if provider == "qwen":
+        return "QWEN_API_KEY or DASHSCOPE_API_KEY"
+    if provider == "visioncoder":
+        return "VISIONCODER_API_KEY"
+    return "DEEPSEEK_API_KEY"
+
+
 def _effective_thinking_budget(provider: str, think: bool, reasoning_effort: str, thinking_budget: int) -> Optional[int]:
     if not think or str(provider or "").lower() != "qwen":
         return None
@@ -333,4 +496,3 @@ def _effective_thinking_budget(provider: str, think: bool, reasoning_effort: str
 
 if __name__ == "__main__":
     main()
-

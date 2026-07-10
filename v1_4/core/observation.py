@@ -33,6 +33,7 @@ def build_observation(
     recent_play_results: List[Dict[str, Any]] | None = None,
     action_history_summary: str = "",
     recent_actions: List[str] | None = None,
+    ante_effort_reviews: List[str] | None = None,
 ) -> Dict[str, Any]:
     enriched = _enrich_state_cards(state, catalog)
     compact = render_compact_observation(
@@ -45,6 +46,7 @@ def build_observation(
         recent_play_results=recent_play_results or [],
         action_history_summary=action_history_summary,
         recent_actions=recent_actions or [],
+        ante_effort_reviews=ante_effort_reviews or [],
     )
     return {
         "phase": phase,
@@ -66,6 +68,7 @@ def render_compact_observation(
     recent_play_results: List[Dict[str, Any]] | None = None,
     action_history_summary: str = "",
     recent_actions: List[str] | None = None,
+    ante_effort_reviews: List[str] | None = None,
 ) -> str:
     obs: Dict[str, Any] = {
         "phase": phase,
@@ -78,6 +81,7 @@ def render_compact_observation(
             "summary": _clean(action_history_summary) or "none",
             "recent": recent_actions or [],
         },
+        "ante_effort_reviews": ante_effort_reviews or [],
     }
     if phase == "SHOP":
         obs["next"] = _next_obj(state)
@@ -188,6 +192,9 @@ def render_observation_text(obs: Dict[str, Any]) -> str:
     if history.get("recent"):
         lines.append("- Recent operations in this run:")
         lines.extend(f"  - {item}" for item in (history.get("recent") or []))
+    if obs.get("ante_effort_reviews"):
+        lines.append("- Completed Ante effort reviews (durable evidence for future decisions):")
+        lines.extend(f"  - {item}" for item in (obs.get("ante_effort_reviews") or []))
     if obs.get("pack_cards"):
         lines.append("- Open pack choices:")
         lines.extend(f"  - {item}" for item in (obs.get("pack_cards") or []))
@@ -821,4 +828,3 @@ def _hand_type_score(name: str) -> int:
         "Pair": 1,
         "High Card": 0,
     }.get(name, 0)
-

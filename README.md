@@ -2,6 +2,8 @@
 
 AI agent experiments for playing Balatro through `balatrobot`.
 
+For a concise Chinese handoff guide, start with [PROJECT_GUIDE.md](PROJECT_GUIDE.md).
+
 The current working version is `v1_4`. It uses the BalatroBot RPC API for game actions, asks an LLM for structured decisions, writes monitor state to `state.json`, and reflects long-term guidance into `v1_4/out/rulebook.md`.
 
 ## Prerequisites
@@ -228,6 +230,20 @@ python -m v1_4.loop \
   --llm-log-io \
   --think \
   --reasoning-effort low
+```
+
+VisionCoder GPT-5.6 with project `.env`:
+
+```bash
+python -m v1_4.loop \
+  --provider visioncoder \
+  --model gpt-5.6-sol \
+  --iterations 20 \
+  --games-per-iter 2 \
+  --out-dir v1_4/out \
+  --state-file state.json \
+  --llm-log-io \
+  --reasoning-effort high
 ```
 
 ### 3. Start the web monitor

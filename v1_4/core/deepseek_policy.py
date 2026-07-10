@@ -1,12 +1,14 @@
 ﻿import json
 import re
 import sys
+import urllib.request
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 from openai import OpenAI
 
 from .prompts import (
+    ANTE_EFFORT_SCHEMA,
     BLIND_SELECT_SCHEMA,
     COMPACT_FORMAT_GUIDE,
     GAME_PRIMER,
@@ -78,6 +80,37 @@ class DeepSeekPolicy:
         text = json.dumps(prompt, ensure_ascii=False)
         return self._structured_chat("REFLECT", text, "reflect_rulebook", REFLECT_PARAMS, max_tokens=max_tokens, thinking=thinking, temperature=0.25)
 
+    def evaluate_ante_effort(self, trajectory: Dict[str, Any]) -> Dict[str, Any]:
+        prompt = {
+            "task": "Evaluate how effortful the complete Balatro Ante was for this agent.",
+            "rubric": {
+                "1-2": "Effortless: blinds cleared in one strong play or with ample resources and reliable scoring.",
+                "3-4": "Easy: a few routine plays/discards, comfortable margins, little dependence on luck.",
+                "5-6": "Moderate: several plays or targeted discards, some awkward hand construction or resource pressure.",
+                "7-8": "Hard: many hands/discards, narrow margins, unreliable scoring, poor shop fit, boss pressure, or substantial luck dependence.",
+                "9": "Barely survived: last-hand or near-failure clear, major mistakes, or a highly lucky rescue.",
+                "10": "Failed during this Ante. Losses must always receive 10.",
+            },
+            "instructions": [
+                "Judge the whole Ante: Small Blind, Big Blind, Boss Blind, and the shop/pack choices recorded between them.",
+                "Use exact outcomes over the agent's own commentary and score estimates.",
+                "More scoring plays generally means more effort; purposeful discards also indicate hand-formation difficulty, but efficient setup is less severe than wasting hands.",
+                "Consider hands/discards remaining, score margin, illegal or failed actions, Joker reliability, boss counterplay, and whether success depended on lucky draws or shop rolls.",
+                "Evidence must cite concrete trajectory facts that a later reflection can compare against other Antes.",
+            ],
+            "trajectory": trajectory,
+            "output_schema": ANTE_EFFORT_SCHEMA,
+        }
+        return self._structured_chat(
+            "ANTE_EFFORT",
+            json.dumps(prompt, ensure_ascii=False),
+            "evaluate_ante_effort",
+            ANTE_EFFORT_PARAMS,
+            max_tokens=900,
+            thinking=self.think,
+            temperature=0.0,
+        )
+
     def summarize_history(self, existing_summary: str, older_actions: list[Dict[str, Any]]) -> str:
         prompt = {
             "task": "Compress current-run Balatro operation history for future decision prompts.",
@@ -85,6 +118,7 @@ class DeepSeekPolicy:
             "older_actions": older_actions,
             "requirements": [
                 "Write a compact factual summary of important decisions, outcomes, scoring strength, Joker changes, consumable use attempts, errors, and lessons that still matter in this same run.",
+                "Preserve objective effort evidence needed for later Ante assessment: scoring-play count, purposeful or wasted discards, hands/discards remaining, close clears or failures, score margins, difficult hand construction, and luck-dependent rescues.",
                 "Use the latest commentary and reason fields to infer the next intended plan if one is visible, such as target hand type, whether to save or spend discards, shop upgrade priorities, boss preparation, or consumable timing.",
                 "Include that inferred next plan explicitly as 'Next plan: ...' when there is enough evidence; otherwise omit it instead of inventing one.",
                 "Prefer exact outcomes from the records over speculation.",
@@ -120,10 +154,12 @@ class DeepSeekPolicy:
     def _effective_decision_format(self) -> str:
         if self.decision_format in ("json", "tool"):
             return self.decision_format
+        if self.provider == "visioncoder":
+            return "json"
         return "json" if self.provider == "deepseek" else "tool"
 
     def _structured_max_tokens(self, requested: int, thinking: bool) -> int:
-        if self.provider == "deepseek" and thinking and self._effective_decision_format() == "json":
+        if self.provider in ("deepseek", "visioncoder") and thinking and self._effective_decision_format() == "json":
             return max(int(requested or 0), 16384)
         return int(requested or 0)
 
@@ -297,6 +333,8 @@ class DeepSeekPolicy:
         return parsed, raw, tool_name
 
     def _send_and_parse_json_request(self, request: Dict[str, Any]) -> tuple[Optional[Dict[str, Any]], str]:
+        if self.provider == "visioncoder":
+            return self._send_and_parse_responses_json_request(request)
         response = self.client.chat.completions.create(**request)
         raw = ""
         choices = response.choices or []
@@ -307,6 +345,41 @@ class DeepSeekPolicy:
                 reasoning = getattr(message, "reasoning_content", None)
                 if reasoning:
                     raw = str(reasoning or "").strip()
+        return _extract_json(raw), raw
+
+    def _send_and_parse_responses_json_request(self, request: Dict[str, Any]) -> tuple[Optional[Dict[str, Any]], str]:
+        messages = request.get("messages") or []
+        input_items = [
+            {
+                "role": item.get("role", "user"),
+                "content": [{"type": "input_text", "text": str(item.get("content") or "")}],
+            }
+            for item in messages
+        ]
+        payload: Dict[str, Any] = {
+            "model": request["model"],
+            "input": input_items,
+            "temperature": request.get("temperature", 0.2),
+            "max_output_tokens": request.get("max_tokens", 1024),
+            "store": False,
+        }
+        if request.get("response_format"):
+            payload["text"] = {"format": {"type": "json_object"}}
+        if request.get("reasoning_effort"):
+            payload["reasoning"] = {"effort": request["reasoning_effort"]}
+
+        http_request = urllib.request.Request(
+            self.base_url.rstrip("/") + "/responses",
+            data=json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(http_request, timeout=self.timeout) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        raw = _responses_text(data)
         return _extract_json(raw), raw
 
 
@@ -378,9 +451,9 @@ def _json_base_system(text: str) -> str:
 
 def _normalize_base_url(url: str) -> str:
     out = str(url or "https://api.deepseek.com").rstrip("/")
-    suffix = "/chat/completions"
-    if out.endswith(suffix):
-        out = out[: -len(suffix)]
+    for suffix in ("/chat/completions", "/responses"):
+        if out.endswith(suffix):
+            out = out[: -len(suffix)]
     return out
 
 
@@ -397,7 +470,24 @@ def _deepseek_reasoning_effort(reasoning_effort: str) -> str:
     effort = str(reasoning_effort or "high").lower()
     if effort in ("max", "xhigh"):
         return "max"
+    if effort in ("low", "medium", "high"):
+        return effort
     return "high"
+
+
+def _responses_text(data: Dict[str, Any]) -> str:
+    if isinstance(data.get("output_text"), str):
+        return data["output_text"].strip()
+    parts: list[str] = []
+    for item in data.get("output") or []:
+        if not isinstance(item, dict):
+            continue
+        for content in item.get("content") or []:
+            if not isinstance(content, dict):
+                continue
+            if content.get("type") in ("output_text", "text"):
+                parts.append(str(content.get("text") or ""))
+    return "".join(parts).strip()
 
 
 def _thinking_disabled_extra_body(provider: str) -> Dict[str, Any]:
@@ -541,13 +631,38 @@ PACK_PARAMS = {
     "required": ["action", "target", "reason", "commentary"],
 }
 
+ANTE_EFFORT_PARAMS = {
+    "type": "object",
+    "properties": {
+        "effort_score": {"type": "integer", "minimum": 1, "maximum": 10},
+        "luck_dependence": {"type": "string", "enum": ["low", "medium", "high", "unknown"]},
+        "difficulty_factors": STRING_ARRAY,
+        "evidence": STRING_ARRAY,
+        "summary": {"type": "string"},
+        "improvement": {"type": "string"},
+        "commentary": {"type": "string", "description": "A brief effort assessment for the human operator."},
+    },
+    "required": ["effort_score", "luck_dependence", "difficulty_factors", "evidence", "summary", "improvement", "commentary"],
+}
+
+REFLECT_OPERATION = {
+    "type": "object",
+    "properties": {
+        "op": {"type": "string", "enum": ["add", "update", "delete"]},
+        "target_id": {"type": "string"},
+        "rule": {"type": "string"},
+        "reason": {"type": "string"},
+    },
+    "required": ["op", "target_id", "rule", "reason"],
+}
+
 REFLECT_PARAMS = {
     "type": "object",
     "properties": {
-        "rules": STRING_ARRAY,
-        "commentary": {"type": "string", "description": "2-4 short sentences summarizing what changed in the rulebook."},
+        "operations": {"type": "array", "items": REFLECT_OPERATION},
+        "commentary": {"type": "string", "description": "2-4 short sentences summarizing incremental rulebook edits."},
     },
-    "required": ["rules", "commentary"],
+    "required": ["operations", "commentary"],
 }
 
 HISTORY_SUMMARY_PARAMS = {
@@ -566,4 +681,3 @@ def _safe_print(text: str) -> None:
     except UnicodeEncodeError:
         encoded = text.encode(getattr(sys.stdout, "encoding", None) or "utf-8", errors="replace")
         print(encoded.decode(getattr(sys.stdout, "encoding", None) or "utf-8", errors="replace"))
-
